@@ -5,7 +5,7 @@ export function createTextSharing({editor,output,status,send,session,clock=globa
  const seen=new Map();
  const tell=message=>{status.textContent=message;};
  function cancel(){clock.clearTimeout(timer);timer=null;}
- function schedule(){cancel();if(enabled&&role==='viewer'&&!composing){dirty=true;timer=clock.setTimeout(flush,400);}}
+ function schedule(){cancel();if(!enabled){tell('Local draft only. Connect as Viewer, then use Send current text to share it.');return;}if(role==='viewer'&&!composing){dirty=true;timer=clock.setTimeout(flush,400);}}
  async function flush(){
    timer=null;if(!enabled||role!=='viewer'||composing||inFlight||!dirty)return;
    const now=clock.now?clock.now():Date.now();
@@ -26,8 +26,9 @@ export function createTextSharing({editor,output,status,send,session,clock=globa
  editor.oncompositionstart=()=>{composing=true;cancel();};
  editor.oncompositionend=()=>{composing=false;schedule();};
  return {
-   connect(nextRole){cancel();epoch++;enabled=true;role=nextRole;inFlight=false;dirty=false;composing=false;editor.disabled=role!=='viewer';tell(role==='viewer'?'Type in this box to share text with the source, even when frames are stopped.':'Waiting for viewer text.');},
-   disconnect(){epoch++;enabled=false;dirty=false;inFlight=false;cancel();editor.disabled=true;tell('Disconnected. Text is not being shared.');},
+   selectRole(nextRole){if(enabled)return;role=nextRole;editor.disabled=false;editor.readOnly=role!=='viewer';tell(role==='viewer'?'Viewer: you can type a local draft now. Connect to share; Send current text sends an existing draft.':'Source: received text is read-only. Select Viewer if you want to type.');},
+   connect(nextRole){cancel();epoch++;enabled=true;role=nextRole;inFlight=false;dirty=false;composing=false;editor.disabled=false;editor.readOnly=role!=='viewer';tell(role==='viewer'?'Connected Viewer: edits are shared now, independently of frames. Use Send current text for an existing draft.':'Waiting for viewer text.');},
+   disconnect(){epoch++;enabled=false;dirty=false;inFlight=false;cancel();editor.disabled=false;editor.readOnly=role!=='viewer';tell('Disconnected. Viewer can edit a local draft; nothing is sent. Reconnect to share.');},
    resend(){if(enabled&&role==='viewer'){schedule();}},
    receive(message){
      if(!enabled||role!=='source')return {received:false};

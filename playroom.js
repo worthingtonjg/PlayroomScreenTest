@@ -7,6 +7,9 @@ let rpcCallbacks=0,actionReceipts=0,sendAttempts=0,sourceReplies=0;
 const encoder=new TextEncoder(),name='syntheticCanvasTrialV1';
 const report=s=>$('status').textContent=s;
 const textSharing=createTextSharing({editor:$('sharedText'),output:$('receivedText'),status:$('textStatus'),session:crypto.randomUUID(),send:message=>sdk.RPC.call('syntheticTextV1',message,sdk.RPC.Mode.OTHERS)});
+function selectTextRole(){if(connected)return;const selected=$('role').value;textSharing.selectRole(selected);$('viewerText').hidden=selected!=='viewer';$('sourceText').hidden=selected!=='source';}
+$('role').onchange=selectTextRole;
+selectTextRole();
 $('sendText').onclick=()=>textSharing.resend();
 function disconnected(){connected=false;active=false;clearInterval(timer);textSharing.disconnect();$('start').disabled=true;$('sendText').disabled=true;report('Disconnected. Reload this page to reconnect.');}
 $('disconnect').onclick=()=>{disconnected();location.replace(location.pathname+location.search);};

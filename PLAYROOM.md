@@ -28,7 +28,7 @@ These caps are experiment choices, not Playroom guarantees. Numeric service limi
 
 ## Verification status
 
-Twelve local tests pass, including a mocked viewer-to-source RPC response and inactive-run rejection. No live Playroom round-trip was verified by automation; browser startup was blocked. The user's reported live input-delivery symptom is not proven fixed. Static deployment checks only establish that files are hosted correctly.
+Thirteen local tests pass, including a mocked viewer-to-source RPC response and inactive-run rejection. No live Playroom round-trip was verified by automation; browser startup was blocked. The user's reported live input-delivery symptom is not proven fixed. Static deployment checks only establish that files are hosted correctly.
 
 The public gameId comes from the user's Playroom project. No credentials or account changes are part of this repository. If using a different project, enter its public gameId in the page. The SDK CDN URL follows the official unversioned example; future SDK changes may require checking compatibility.
 
@@ -44,3 +44,5 @@ Official references:
 After both participants connect, type in the Viewer Shared text textarea and read it in the Source panel. No frames need to run. Clear and Backspace are shared as full snapshots, including an empty string. Text snapshots use a separate RPC with a 400 ms debounce, maximum two attempts/sec, a 1,024-character limit, and an 8 KiB message limit. Composition waits until completion; newer revisions supersede older snapshots. The source uses textContent, so markup stays literal. Pending text is canceled on disconnect. Disconnect reloads the document to unload the SDK; reconnect requires Connect again. No persistence is provided.
 
 Text delivery has a three-second receipt timeout and no automatic retries. Send current text retries explicitly, including after reconnect or when the Source joins late. Test coverage includes edits/clear, rapid changes, composition, disconnect/reconnect, stale revisions, limits, and receipt timeout. These remain mocked local tests; real Playroom exchange has not been verified by automation.
+
+Selecting Viewer now immediately displays an editable textarea even before connection or after a lost connection. Offline edits stay as a local draft and send nothing. Connect, then use Send current text to send an existing draft; subsequent edits are debounced automatically. Selecting Source shows only the read-only received-text panel. The old initial disabled attribute and connection-only role update caused the textbox to be unfocusable while not yet connected; those gates are removed. The image run never controls textarea editability. These state transitions are covered by local tests; no live browser/overlay verification is claimed.

@@ -8,9 +8,9 @@
 <button id="connect">Connect to Playroom</button>
 <button id="disconnect" disabled>Disconnect</button>
 <section><h2>Shared text</h2>
-<div id="viewerText"><label for="sharedText">Viewer text (up to 1,024 characters)</label><br><textarea id="sharedText" rows="4" maxlength="1024" disabled style="width:100%;box-sizing:border-box;font:16px system-ui;min-height:120px"></textarea><br><button id="sendText" disabled>Send current text</button></div>
+<div id="viewerText" hidden><label for="sharedText">Viewer text (up to 1,024 characters; editable before connecting)</label><br><textarea id="sharedText" rows="4" maxlength="1024" style="width:100%;box-sizing:border-box;font:16px system-ui;min-height:120px"></textarea><br><button id="sendText" disabled>Send current text</button></div>
 <div id="sourceText" hidden><p>Received viewer text (read-only)</p><pre id="receivedText" style="min-height:4em;border:1px solid #7694bb;padding:12px;overflow-wrap:anywhere"></pre></div>
-<p id="textStatus" aria-live="polite">Connect to share text. Image frames do not need to be running.</p></section>
+<p id="textStatus" aria-live="polite">Select Viewer above to type, or Source to receive read-only text. Connecting enables sharing; image frames are independent.</p></section>
 <h2>Bounded image test</h2>
 <label>Mode <select id="mode"><option value="full">Full PNG</option><option value="tiles">Changed 32px tiles</option></select></label>
 <button id="start" disabled>Send 10 frames at 1 fps</button>

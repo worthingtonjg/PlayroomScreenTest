@@ -22,7 +22,7 @@ See [PLAYROOM.md](./PLAYROOM.md). The public project gameId is prefilled. Connec
 
 ## Verification
 
-`npm test` runs twelve tests covering tile changes and mocked synthetic input/RPC handling. JavaScript syntax checks pass. Mocked tests and static hosting checks are not real Playroom delivery evidence. Live browser automation was unavailable during development; the reported live input issue has not been reproduced or proven resolved. On-screen diagnostics separate detection, send attempts, receipt, application, and image acknowledgement.
+`npm test` runs thirteen tests covering tile changes and mocked synthetic input/RPC handling. JavaScript syntax checks pass. Mocked tests and static hosting checks are not real Playroom delivery evidence. Live browser automation was unavailable during development; the reported live input issue has not been reproduced or proven resolved. On-screen diagnostics separate detection, send attempts, receipt, application, and image acknowledgement.
 
 Generated pixels, fixed demo actions, and the contents of the explicitly labeled Viewer textarea are sent through Playroom. The local baseline's dummy text stays in same-origin browser tabs. No OS capture, native input injection, shell execution, remote-desktop functionality, or stored credentials are included.
 

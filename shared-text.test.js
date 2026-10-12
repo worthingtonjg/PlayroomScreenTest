@@ -28,10 +28,18 @@ test('rapid edits debounce to latest snapshot and IME composition waits for comp
 });
 test('disconnect cancels pending edits; reconnect and explicit resend deliver current content',async()=>{
  const h=setup();h.editor.value='pending';h.editor.oninput({});h.viewer.disconnect();await h.advance(500);
- assert.equal(h.sent.length,0);assert.equal(h.editor.disabled,true);
+ assert.equal(h.sent.length,0);assert.equal(h.editor.disabled,false);assert.equal(h.editor.readOnly,false);
  h.viewer.connect('viewer');h.viewer.resend();await h.advance(500);assert.equal(h.sourceOutput.textContent,'pending');
  h.source.disconnect();h.editor.value='not delivered';h.editor.oninput({});await h.advance(500);assert.equal(h.sourceOutput.textContent,'pending');assert.match(h.viewerStatus.textContent,/No matching source receipt/);
  h.source.connect('source');h.viewer.resend();await h.advance(500);assert.equal(h.sourceOutput.textContent,'not delivered');
+});
+test('Viewer draft is editable without connection; Source stays read-only',async()=>{
+ const h=setup();h.viewer.disconnect();h.viewer.selectRole('source');assert.equal(h.editor.readOnly,true);
+ h.viewer.selectRole('viewer');assert.equal(h.editor.disabled,false);assert.equal(h.editor.readOnly,false);
+ h.editor.value='offline draft';h.editor.oninput({});await h.advance(1000);
+ assert.equal(h.sent.length,0);assert.match(h.viewerStatus.textContent,/Local draft only/);
+ h.viewer.connect('viewer');assert.equal(h.editor.readOnly,false);h.viewer.resend();await h.advance(500);
+ assert.equal(h.sourceOutput.textContent,'offline draft');
 });
 test('length limits, literal text rendering, and stale revisions',async()=>{
  const h=setup();h.editor.value='x'.repeat(2000);h.editor.oninput({});await h.advance(500);assert.equal(h.sourceOutput.textContent.length,1024);
