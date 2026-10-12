@@ -1,7 +1,8 @@
-import {drawSynthetic,encodeFrame,imageSizes,checkImageBudget,validFrame} from './image-trial.js';
-import {createTextSharing} from './shared-text.js';
-import {createMeasurements} from './measurements.js';
-import {drawComparison} from './comparison-scene.js';
+import {drawSynthetic,encodeFrame,imageSizes,checkImageBudget,validFrame} from './image-trial.js?v=20261012-fixtures-v2';
+import {createTextSharing} from './shared-text.js?v=20261012-fixtures-v2';
+import {createMeasurements} from './measurements.js?v=20261012-fixtures-v2';
+import {drawComparison} from './comparison-scene.js?v=20261012-fixtures-v2';
+import {BUILD_ID} from './build-info.js?v=20261012-fixtures-v2';
 const $=id=>document.getElementById(id),canvas=$('canvas'),ctx=canvas.getContext('2d',{willReadFrequently:true});
 let sdk,role,connected=false,active=false,used=false,timer,previous=null,sequence=0,received=0,total=0,actions=0,value=0,ack=null,last=0;
 let pending=new Map(),lastInput=-Infinity,until=0,localInputs=0,shownActions=0;
@@ -9,6 +10,7 @@ let rpcCallbacks=0,actionReceipts=0,sendAttempts=0,sourceReplies=0;
 let preparedFrames=[],comparison=false,preparing=false;
 const encoder=new TextEncoder(),name='syntheticCanvasTrialV1';
 const report=s=>$('status').textContent=s;
+$('runtimeBuild').textContent=`Runtime build: ${BUILD_ID}`;
 const measurements=createMeasurements({changed:m=>{
  const timing=(title,r)=>`${title}: ${r.acks}/${r.attempts} matched acks; requests received here: ${r.received}; last/mean RTT: ${r.acks?r.lastMs.toFixed(1)+' / '+(r.totalMs/r.acks).toFixed(1)+' ms':'--'}`;
  $('measurements').textContent=`Application payload bytes attempted out / received in: ${m.sentBytes} / ${m.receivedBytes}\nImage request bytes only: ${m.image.requestBytes}; not yet matched image acks: ${m.image.attempts-m.image.acks}\n${timing('Text request -> source ack',m.text)}\n${timing('Image send -> viewer draw ack',m.image)}\n${timing('Canvas action -> source reply',m.action)}`;
@@ -114,19 +116,22 @@ $('connect').onclick=async()=>{
 $('start').onclick=async()=>{
  if(!connected||role!=='source'||used||preparing)return;
  preparing=true;$('start').disabled=true;$('mode').disabled=true;$('size').disabled=true;
- const preparationFailed=message=>{preparing=false;report(message+' No image frames sent.');$('start').disabled=!connected;$('mode').disabled=false;$('size').disabled=false;};
- const dimensions=imageSizes[$('size').value]??imageSizes.small;
- [canvas.width,canvas.height]=dimensions;comparison=$('size').value!=='small';
+ const selectedSize=$('size').value,selectedMode=$('mode').value;
+ const preparationFailed=message=>{preparing=false;report(`[${BUILD_ID}; size=${selectedSize}; mode=${selectedMode}] ${message} No image frames sent.`);$('start').disabled=!connected;$('mode').disabled=false;$('size').disabled=false;};
+ const dimensions=imageSizes[selectedSize];
+ if(!dimensions||!['full','tiles'].includes(selectedMode)){preparationFailed('Unknown size or mode; no fallback was used.');return;}
+ [canvas.width,canvas.height]=dimensions;comparison=selectedSize!=='small';
+ $('imagePlan').textContent=`Build ${BUILD_ID}; size=${selectedSize}; mode=${selectedMode}; path=${comparison?'verified PNG fixture':'small browser canvas encoder'}. Preparing...`;
  value=0;sequence=0;previous=null;ack=null;actions=0;preparedFrames=[];
  try{
-   if(comparison){const response=await fetch(`./fixtures/${$('size').value}-${$('mode').value}.json`);if(!response.ok)throw new Error('Comparison fixtures unavailable. Reload the latest Host page.');preparedFrames=await response.json();}
+   if(comparison){const response=await fetch(`./fixtures/${selectedSize}-${selectedMode}.json?v=${BUILD_ID}`,{cache:'no-store'});if(!response.ok)throw new Error('Comparison fixture HTTP '+response.status+'; no generator fallback was used.');preparedFrames=await response.json();}
    else {let baseline=null;for(let i=0;i<10;i++){drawSynthetic(ctx,canvas.width,canvas.height,i,0);const encoded=encodeFrame(canvas,ctx,baseline,$('mode').value,i+1,{ack:null,sourceActions:0,comparison});baseline=encoded.pixels;preparedFrames.push(encoded.message);}}
  }catch(error){preparationFailed(error.message);return;}
  if(!connected){preparationFailed('Disconnected during preparation.');return;}
  const budget=checkImageBudget(preparedFrames,total);draw();
  if(!budget.ok){preparationFailed(budget.reason);return;}
  preparing=false;
- $('imagePlan').textContent=`${canvas.width} x ${canvas.height}; ${$('mode').value}; 10 frames / 1 fps; preflight JSON ${budget.total} bytes; maximum frame ${Math.max(...budget.sizes)} bytes. ${comparison?'Fixed scene: canvas actions disabled.':'Small interactive test: later actions can change actual bytes.'}`;
+ $('imagePlan').textContent=`Build ${BUILD_ID}; size=${selectedSize} (${canvas.width} x ${canvas.height}); mode=${selectedMode}; path=${comparison?'verified PNG fixture':'browser canvas'}; 10 frames / 1 fps; preflight JSON ${budget.total} bytes; maximum frame ${Math.max(...budget.sizes)} bytes. ${comparison?'Fixed scene: canvas actions disabled.':'Small interactive test: later actions can change actual bytes.'}`;
  measurements.reset();used=true;active=true;$('start').disabled=true;$('mode').disabled=true;$('size').disabled=true;
  feedback(comparison?'Deterministic comparison started. Shared text remains independent.':'Run started. Click/type in the VIEWER canvas now.');
  timer=setInterval(frame,1000);setTimeout(()=>{if(active)stop('10-second run deadline reached.');},10500);

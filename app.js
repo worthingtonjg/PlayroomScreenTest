@@ -1,4 +1,4 @@
-import {changedTiles} from './diff.js';
+import {changedTiles} from './diff.js?v=20261012-fixtures-v2';
 const $=id=>document.getElementById(id), viewer=new URLSearchParams(location.search).has('viewer');
 const canvas=$('canvas'),ctx=canvas.getContext('2d',{willReadFrequently:true});
 const channel=new BroadcastChannel('playroom-synthetic-v1');

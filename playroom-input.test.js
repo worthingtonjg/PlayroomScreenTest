@@ -5,15 +5,16 @@ import vm from 'node:vm';
 import {createMeasurements} from './measurements.js';
 import {drawSynthetic,encodeFrame,imageSizes,checkImageBudget,validFrame} from './image-trial.js';
 import {drawComparison} from './comparison-scene.js';
+import {BUILD_ID} from './build-info.js';
 
-function harness(){
- const elements=new Map(),calls=[];
- const context={fillRect(){},fillText(){},save(){},restore(){},setTransform(){},drawImage(){}};
+function harness(fixtureFrames){
+ const elements=new Map(),calls=[],fixtureRequests=[];
+ const context={fillRect(){},fillText(){},save(){},restore(){},setTransform(){},drawImage(){},createImageData:(w,h)=>({data:new Uint8ClampedArray(w*h*4)}),putImageData(){}};
  const get=id=>{if(!elements.has(id))elements.set(id,{width:160,height:96,textContent:'',getContext:()=>context,focus(){this.onfocus?.();}});return elements.get(id);};
  const source=readFileSync(new URL('./playroom.js',import.meta.url),'utf8').replace(/^import .*\n/gm,'');
- const sandbox={drawComparison,drawSynthetic,encodeFrame,imageSizes,checkImageBudget,validFrame,fetch:async()=>({blob:async()=>({})}),createImageBitmap:async()=>({close(){}}),createMeasurements,createTextSharing:()=>({resend(){},disconnect(){},selectRole(){}}),document:{getElementById:get},TextEncoder,performance:{now:()=>1000},crypto:{randomUUID:()=> 'dummy-id'},clearInterval(){},setTimeout(){},setInterval(){},calls};
- vm.runInNewContext(source+`\n globalThis.testApi={input:demoAction,receive,rpcHandler,setPeer(peer){sdk.RPC.call=async(...args)=>{calls.push(args);return peer(args[1],{id:'viewer-test'});};},set(options){({connected,role,received,until,active}={connected:true,role:'viewer',received:1,until:2000,active:false,...options});sdk={RPC:{Mode:{OTHERS:'others'},call:async(...args)=>calls.push(args)}};}};`,sandbox);
- return {api:sandbox.testApi,get,calls};
+ const sandbox={BUILD_ID,drawComparison,drawSynthetic,encodeFrame,imageSizes,checkImageBudget,validFrame,fetch:async(url,options)=>{if(url.startsWith('./fixtures/')){fixtureRequests.push({url,options});return {ok:true,json:async()=>fixtureFrames};}return {blob:async()=>({})};},createImageBitmap:async()=>({close(){}}),createMeasurements,createTextSharing:()=>({resend(){},disconnect(){},selectRole(){}}),document:{getElementById:get},TextEncoder,performance:{now:()=>1000},crypto:{randomUUID:()=> 'dummy-id'},clearInterval(){},setTimeout(){},setInterval(){},calls};
+ vm.runInNewContext(source+`\n globalThis.testApi={input:demoAction,receive,rpcHandler,frame,setPeer(peer){sdk.RPC.call=async(...args)=>{calls.push(args);return peer(args[1],{id:'viewer-test'});};},set(options){({connected,role,received,until,active}={connected:true,role:'viewer',received:1,until:2000,active:false,...options});sdk={RPC:{Mode:{OTHERS:'others'},call:async(...args)=>calls.push(args)}};}};`,sandbox);
+ return {api:sandbox.testApi,get,calls,fixtureRequests};
 }
 test('viewer explains before-run and after-run input instead of silently dropping it',()=>{
  const h=harness();h.api.set({received:0});h.api.input();assert.match(h.get('inputStatus').textContent,/No frame received/);
@@ -50,4 +51,12 @@ test('viewer returns sequence-specific draw ack only for accepted frame sequence
  assert.equal(reply.role,'viewer');assert.equal(reply.drawn,1);
  const missing=await h.api.rpcHandler(JSON.stringify({type:'frame',sequence:3,full:false,patches:[]}),{id:'host'});
  assert.equal(missing.drawn,undefined);
+});
+test('reported selection 640x360 Full uses versioned fixtures and sends the measured fixture, never old canvas encoder',async()=>{
+ const fixtures=JSON.parse(readFileSync(new URL('./fixtures/large-full.json',import.meta.url),'utf8'));
+ const h=harness(fixtures);h.api.set({role:'source'});h.get('size').value='large';h.get('mode').value='full';
+ await h.get('start').onclick();
+ assert.equal(h.fixtureRequests[0].url,`./fixtures/large-full.json?v=${BUILD_ID}`);assert.equal(h.fixtureRequests[0].options.cache,'no-store');
+ assert.match(h.get('imagePlan').textContent,/verified PNG fixture/);assert.match(h.get('imagePlan').textContent,/5301 bytes; maximum frame 535 bytes/);
+ assert.equal(h.calls.length,0);await h.api.frame();assert.deepEqual(JSON.parse(h.calls[0][1]),fixtures[0]);
 });

@@ -22,7 +22,7 @@ See [PLAYROOM.md](./PLAYROOM.md). The public project gameId is prefilled. Connec
 
 ## Verification
 
-`npm test` runs twenty-seven tests covering tile changes and mocked synthetic input/RPC handling. JavaScript syntax checks pass. Mocked tests and static hosting checks are not real Playroom delivery evidence. Live browser automation was unavailable during development; the reported live input issue has not been reproduced or proven resolved. On-screen diagnostics separate detection, send attempts, receipt, application, and image acknowledgement.
+`npm test` runs twenty-nine tests covering tile changes and mocked synthetic input/RPC handling. JavaScript syntax checks pass. Mocked tests and static hosting checks are not real Playroom delivery evidence. Live browser automation was unavailable during development; the reported live input issue has not been reproduced or proven resolved. On-screen diagnostics separate detection, send attempts, receipt, application, and image acknowledgement.
 
 Generated pixels, fixed demo actions, and the contents of the explicitly labeled Viewer textarea are sent through Playroom. The local baseline's dummy text stays in same-origin browser tabs. No OS capture, native input injection, shell execution, remote-desktop functionality, or stored credentials are included.
 
@@ -52,7 +52,7 @@ For comparison, note Image request bytes only, matched image acknowledgements, a
 
 Changed mode sends one full baseline followed by 32px tiles. The Viewer validates dimensions and sequence; missing delta baseline yields a rejection, stopping subsequent sends when the Host receives it. No automatic retries or keyframe traffic is added. A missing acknowledgement remains unmatched in the counter; it is not assigned a latency value. Full frames can recover from sequence gaps. Image RTT still starts after encoding and includes decode/draw plus acknowledgement, not one-way latency or screen presentation.
 
-Twenty-seven local tests cover deterministic draw commands, byte caps, dimension/baseline validation, RTT/byte counters, and existing input behavior. Actual PNG payload sizes are verified offline. Live browser/service performance for the corrected larger fixtures remains unmeasured by automation.
+Twenty-nine local tests cover deterministic draw commands, byte caps, dimension/baseline validation, RTT/byte counters, and existing input behavior. Actual PNG payload sizes are verified offline. Live browser/service performance for the corrected larger fixtures remains unmeasured by automation.
 
 ### Verified comparison payload sizes
 
@@ -68,3 +68,11 @@ The former larger browser-canvas PNGs could exceed the cap. The corrected compar
 These are actual serialized application messages, including base64 and metadata, excluding RPC/network overhead. All four combinations fit the unchanged 8,192 B/message and 65,536 B/session caps. This sparse scene compresses extremely well as a full PNG, so tile overhead produces more bytes here. This is not evidence about real screen-content compression.
 
 `node build-fixtures.mjs` regenerates fixtures with Node's zlib encoder. Tests validate PNG checksums, decompress every patch, reconstruct every frame and compare both modes with the deterministic scene. Browser rendering and live Playroom performance remain unverified by automation because the browser runtime cannot start. The old 160x96 interactive mode is unchanged.
+
+### Runtime version check
+
+The pages and their complete local module dependency chains now use `?v=20261012-fixtures-v2`. Fixture fetches also carry this version and disable cache reuse. Both pages display Page build and Runtime build; both should say `20261012-fixtures-v2`. Use `host.html?v=20261012-fixtures-v2` and `viewer.html?v=20261012-fixtures-v2` for this correction.
+
+The exact old error "A frame exceeds the 8 KiB message cap. Choose a smaller size." exists in commit 789c807, but not in the current runtime chain. Public assets were being served with max-age=600 while imports were unversioned. An already-loaded or cached old module can therefore retain the earlier generator; the user's browser session could not be inspected to distinguish these causes. Build-specific URLs remove dependency on those unversioned cache entries.
+
+The exact reported selection, large (640x360) + full, now has an integration test that runs the start handler with the real JSON fixture, verifies the versioned fetch, the 5,301-byte total / 535-byte maximum preflight, and the first actual RPC payload. No old canvas encoding or silent size fallback is used. Preflight errors now include build, size, mode, and exact offending bytes. These are local logic/encoding checks, not a live browser or network round-trip.

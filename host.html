@@ -1,8 +1,8 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Host - Playroom synthetic test</title>
 <style>body{font:16px system-ui;max-width:850px;margin:32px auto;padding:16px;background:#101827;color:#e3eaf5}input,select,button{font:inherit;margin:6px;padding:8px}canvas{width:480px;max-width:100%;image-rendering:pixelated;border:2px solid #7694bb;display:block;margin:20px 0}a{color:#80d5ff}pre{white-space:pre-wrap}input,select,button{max-width:100%;box-sizing:border-box}pre{overflow-wrap:anywhere}</style>
-<h1>Host - synthetic test</h1><p><a href="./playroom.html">Host / Viewer chooser</a></p>
+<h1>Host - synthetic test</h1><p><a href="./playroom.html?v=20261012-fixtures-v2">Host / Viewer chooser</a></p>
 <p>Connecting loads Playroom Kit and contacts the external service. The Viewer text box shares its contents with the Source. The separate canvas test sends generated pixels and fixed demo actions.</p>
-<input id="role" type="hidden" value="source">
+<p id="pageBuild">Page build: 20261012-fixtures-v2</p><p id="runtimeBuild">Runtime module loading...</p><input id="role" type="hidden" value="source">
 <label>Project gameId <input id="gameId" value="zizUPApGovIFKQQGxIAO" autocomplete="off"></label><br>
 <label>Room code (leave blank to create a room) <input id="room" autocomplete="off"></label><br>
 <button id="connect">Connect to Playroom</button>
@@ -21,4 +21,4 @@
 <pre id="rpcStatus">No RPC callback observed yet.</pre>
 <p>Connect here first, share the room code with the Viewer, and wait for them to join. Text arrives independently of frames. To test images, choose a mode and send the bounded ten-frame run.</p>
 <pre id="status">Not connected. This service mode has not yet been verified against Playroom.</pre>
-<script type="module" src="./playroom.js"></script></html>
+<script type="module" src="./playroom.js?v=20261012-fixtures-v2"></script></html>

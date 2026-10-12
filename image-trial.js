@@ -1,4 +1,4 @@
-import {changedTiles} from './diff.js';
+import {changedTiles} from './diff.js?v=20261012-fixtures-v2';
 export const imageSizes={'small':[160,96],'medium':[320,192],'large':[640,360]};
 export function drawSynthetic(ctx,width,height,frame,value=0){
  ctx.save();ctx.setTransform(width/160,0,0,height/96,0,0);
