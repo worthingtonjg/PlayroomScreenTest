@@ -1,0 +1,18 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Bounded Playroom synthetic test</title>
+<style>body{font:16px system-ui;max-width:850px;margin:32px auto;padding:16px;background:#101827;color:#e3eaf5}input,select,button{font:inherit;margin:6px;padding:8px}canvas{width:480px;max-width:100%;image-rendering:pixelated;border:2px solid #7694bb;display:block;margin:20px 0}a{color:#80d5ff}pre{white-space:pre-wrap}</style>
+<h1>Playroom: tiny synthetic trial</h1><p><a href="./">Return to local baseline</a></p>
+<p>Connecting loads Playroom Kit from its documented CDN and contacts the external service. Only generated pixels and fixed demo actions are sent. No typed characters are transmitted. Close both tabs to disconnect.</p>
+<label>Role <select id="role"><option value="source">Source</option><option value="viewer">Viewer</option></select></label><br>
+<label>Project gameId <input id="gameId" value="zizUPApGovIFKQQGxIAO" autocomplete="off"></label><br>
+<label>Room code (required for viewer) <input id="room" autocomplete="off"></label><br>
+<button id="connect">Connect to Playroom</button>
+<label>Mode <select id="mode"><option value="full">Full PNG</option><option value="tiles">Changed 32px tiles</option></select></label>
+<button id="start" disabled>Send 10 frames at 1 fps</button>
+<canvas id="canvas" width="160" height="96" tabindex="0" aria-label="Tiny synthetic test canvas"></canvas>
+<p id="focusStatus">Canvas not focused: click it before typing.</p>
+<pre id="inputStatus" aria-live="polite">No demo input yet. Only the viewer sends fixed actions during the ten-frame run.</pre>
+<pre id="connectionStatus">Not connected. After connecting, compare room and player IDs in both tabs.</pre>
+<pre id="rpcStatus">No RPC callback observed yet.</pre>
+<p>Connect source first, copy its displayed room code into the viewer, then connect viewer. Start from source, immediately click the VIEWER canvas and type slowly while frames 1-9 arrive. Every click or letter cycles the number after "const demo ="; letters are never entered or sent. Input is disabled after frame 10. Reload BOTH tabs and reconnect for another run.</p>
+<pre id="status">Not connected. This service mode has not yet been verified against Playroom.</pre>
+<script type="module" src="./playroom.js"></script></html>

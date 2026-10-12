@@ -1,0 +1,9 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Playroom Screen Test — local simulation</title>
+<style>body{font:16px system-ui;background:#101827;color:#e3eaf5;margin:30px auto;max-width:1000px;padding:0 20px}h1{font-size:28px}p{color:#aebfd7}button,select{font:inherit;padding:8px;margin:4px;background:#253651;color:white;border:1px solid #6b83a7;border-radius:6px}canvas{width:100%;max-width:640px;border:2px solid #54718f;border-radius:8px;display:block;margin:20px 0;outline-offset:4px}pre{white-space:pre-wrap;background:#1b2940;padding:16px}a{color:#80d5ff}label{display:inline-block;margin-right:16px}</style>
+<h1>Playroom Screen Test</h1><p>Local synthetic simulation · BroadcastChannel between tabs · No Playroom connection</p>
+<h2 id="role"></h2>
+<div id="sourceControls"><label>Mode <select id="mode"><option value="full">Full PNG frames</option><option value="tiles">Changed 64px tiles</option></select></label><label>Frames/sec <select id="fps"><option>1</option><option selected>2</option><option>5</option></select></label><button id="pause">Pause</button><button id="reset">Reset counters</button><a href="?viewer=1" target="_blank">Open viewer tab</a></div>
+<p id="help"></p><canvas id="canvas" width="640" height="320" tabindex="0" aria-label="Synthetic image canvas"></canvas><pre id="stats">Waiting for frames…</pre>
+<p>Use one source tab and one viewer tab. Keep both visible for a fair comparison; background tabs can be throttled. Runs pause automatically after 60 seconds.</p>
+<script type="module" src="./app.js"></script></html>
+<p><a href="./playroom.html">Optional bounded Playroom service test</a> (requires your project gameId; connects only when clicked)</p>
