@@ -1,9 +1,9 @@
 # Bounded Playroom service trial
 
-Open [the service page](./playroom.html) in two tabs or windows. The public browser gameId is prefilled. The SDK loads from the official documentation's CDN example only after **Connect to Playroom** is clicked.
+Open [Host](./host.html) and [Viewer](./viewer.html) on their respective devices. Roles are fixed; the [old link](./playroom.html) is now a chooser. The public browser gameId is prefilled. The SDK loads from the official documentation's CDN example only after **Connect to Playroom** is clicked.
 
-1. First tab: choose **Source**, leave room blank, and Connect.
-2. Second tab: choose **Viewer**, enter the source's displayed room code, and Connect.
+1. Host page: leave room blank and Connect.
+2. Viewer page: enter the Host room code and Connect.
 3. Check both display the same room and different player IDs. Source role does not need to match the elected host; RPC uses OTHERS.
 4. On Source choose full PNG or changed 32px tiles, then **Send 10 frames at 1 fps**.
 5. Immediately click the viewer canvas and type slowly during frames 1-9. Each click/letter cycles the number after `const demo =`; the canvas action never sends characters. The separate Shared text box sends its contents as text.
@@ -28,7 +28,7 @@ These caps are experiment choices, not Playroom guarantees. Numeric service limi
 
 ## Verification status
 
-Thirteen local tests pass, including a mocked viewer-to-source RPC response and inactive-run rejection. No live Playroom round-trip was verified by automation; browser startup was blocked. The user's reported live input-delivery symptom is not proven fixed. Static deployment checks only establish that files are hosted correctly.
+Sixteen local tests pass, including a mocked viewer-to-source RPC response and inactive-run rejection. No live Playroom round-trip was verified by automation; browser startup was blocked. The user's reported live input-delivery symptom is not proven fixed. Static deployment checks only establish that files are hosted correctly.
 
 The public gameId comes from the user's Playroom project. No credentials or account changes are part of this repository. If using a different project, enter its public gameId in the page. The SDK CDN URL follows the official unversioned example; future SDK changes may require checking compatibility.
 
@@ -45,4 +45,4 @@ After both participants connect, type in the Viewer Shared text textarea and rea
 
 Text delivery has a three-second receipt timeout and no automatic retries. Send current text retries explicitly, including after reconnect or when the Source joins late. Test coverage includes edits/clear, rapid changes, composition, disconnect/reconnect, stale revisions, limits, and receipt timeout. These remain mocked local tests; real Playroom exchange has not been verified by automation.
 
-Selecting Viewer now immediately displays an editable textarea even before connection or after a lost connection. Offline edits stay as a local draft and send nothing. Connect, then use Send current text to send an existing draft; subsequent edits are debounced automatically. Selecting Source shows only the read-only received-text panel. The old initial disabled attribute and connection-only role update caused the textbox to be unfocusable while not yet connected; those gates are removed. The image run never controls textarea editability. These state transitions are covered by local tests; no live browser/overlay verification is claimed.
+Opening Viewer now immediately displays an editable textarea even before connection or after a lost connection. Offline edits stay as a local draft and send nothing. Connect, then use Send current text to send an existing draft; subsequent edits are debounced automatically. Opening Host shows only the read-only received-text panel. The old initial disabled attribute and connection-only role update caused the textbox to be unfocusable while not yet connected; those gates are removed. The image run never controls textarea editability. These state transitions are covered by local tests; no live browser/overlay verification is claimed.

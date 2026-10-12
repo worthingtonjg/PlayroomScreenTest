@@ -26,7 +26,7 @@ export function createTextSharing({editor,output,status,send,session,clock=globa
  editor.oncompositionstart=()=>{composing=true;cancel();};
  editor.oncompositionend=()=>{composing=false;schedule();};
  return {
-   selectRole(nextRole){if(enabled)return;role=nextRole;editor.disabled=false;editor.readOnly=role!=='viewer';tell(role==='viewer'?'Viewer: you can type a local draft now. Connect to share; Send current text sends an existing draft.':'Source: received text is read-only. Select Viewer if you want to type.');},
+   selectRole(nextRole){if(enabled)return;role=nextRole;editor.disabled=false;editor.readOnly=role!=='viewer';tell(role==='viewer'?'Viewer: you can type a local draft now. Connect to share; Send current text sends an existing draft.':'Host: received text is read-only. Open the Viewer page on the device where you want to type.');},
    connect(nextRole){cancel();epoch++;enabled=true;role=nextRole;inFlight=false;dirty=false;composing=false;editor.disabled=false;editor.readOnly=role!=='viewer';tell(role==='viewer'?'Connected Viewer: edits are shared now, independently of frames. Use Send current text for an existing draft.':'Waiting for viewer text.');},
    disconnect(){epoch++;enabled=false;dirty=false;inFlight=false;cancel();editor.disabled=false;editor.readOnly=role!=='viewer';tell('Disconnected. Viewer can edit a local draft; nothing is sent. Reconnect to share.');},
    resend(){if(enabled&&role==='viewer'){schedule();}},

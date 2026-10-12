@@ -1,24 +1,6 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Bounded Playroom synthetic test</title>
-<style>body{font:16px system-ui;max-width:850px;margin:32px auto;padding:16px;background:#101827;color:#e3eaf5}input,select,button{font:inherit;margin:6px;padding:8px}canvas{width:480px;max-width:100%;image-rendering:pixelated;border:2px solid #7694bb;display:block;margin:20px 0}a{color:#80d5ff}pre{white-space:pre-wrap}input,select,button{max-width:100%;box-sizing:border-box}pre{overflow-wrap:anywhere}</style>
-<h1>Playroom: tiny synthetic trial</h1><p><a href="./">Return to local baseline</a></p>
-<p>Connecting loads Playroom Kit and contacts the external service. The Viewer text box shares its contents with the Source. The separate canvas test sends generated pixels and fixed demo actions.</p>
-<label>Role <select id="role"><option value="source">Source</option><option value="viewer">Viewer</option></select></label><br>
-<label>Project gameId <input id="gameId" value="zizUPApGovIFKQQGxIAO" autocomplete="off"></label><br>
-<label>Room code (required for viewer) <input id="room" autocomplete="off"></label><br>
-<button id="connect">Connect to Playroom</button>
-<button id="disconnect" disabled>Disconnect</button>
-<section><h2>Shared text</h2>
-<div id="viewerText" hidden><label for="sharedText">Viewer text (up to 1,024 characters; editable before connecting)</label><br><textarea id="sharedText" rows="4" maxlength="1024" style="width:100%;box-sizing:border-box;font:16px system-ui;min-height:120px"></textarea><br><button id="sendText" disabled>Send current text</button></div>
-<div id="sourceText" hidden><p>Received viewer text (read-only)</p><pre id="receivedText" style="min-height:4em;border:1px solid #7694bb;padding:12px;overflow-wrap:anywhere"></pre></div>
-<p id="textStatus" aria-live="polite">Select Viewer above to type, or Source to receive read-only text. Connecting enables sharing; image frames are independent.</p></section>
-<h2>Bounded image test</h2>
-<label>Mode <select id="mode"><option value="full">Full PNG</option><option value="tiles">Changed 32px tiles</option></select></label>
-<button id="start" disabled>Send 10 frames at 1 fps</button>
-<canvas id="canvas" width="160" height="96" tabindex="0" aria-label="Tiny synthetic test canvas"></canvas>
-<p id="focusStatus">Canvas not focused: click it before typing.</p>
-<pre id="inputStatus" aria-live="polite">No demo input yet. Only the viewer sends fixed actions during the ten-frame run.</pre>
-<pre id="connectionStatus">Not connected. After connecting, compare room and player IDs in both tabs.</pre>
-<pre id="rpcStatus">No RPC callback observed yet.</pre>
-<p>Connect source first, copy its displayed room code into the viewer, then connect viewer. Start from source, immediately click the VIEWER canvas and type slowly while frames 1-9 arrive. Every click or letter cycles the number after "const demo ="; letters are never entered or sent. Input is disabled after frame 10. Reload BOTH tabs and reconnect for another run.</p>
-<pre id="status">Not connected. This service mode has not yet been verified against Playroom.</pre>
-<script type="module" src="./playroom.js"></script></html>
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Playroom test - choose a page</title>
+<style>body{font:18px system-ui;background:#101827;color:#e3eaf5;max-width:700px;margin:40px auto;padding:20px}a{color:#80d5ff}li{margin:20px 0}</style>
+<h1>Playroom synthetic test</h1><p>Open a different page on each device. Roles are fixed.</p>
+<ul><li><a href="./host.html">Open Host</a> - creates a room, receives text, and sends the bounded image test.</li><li><a href="./viewer.html">Open Viewer</a> - joins the Host room, types shared text, and views images.</li></ul>
+<p>Connect Host first, then copy its room code into Viewer. Text works independently of image frames. Opening a page does not connect automatically.</p>
+<p><a href="./">Local browser baseline</a></p></html>

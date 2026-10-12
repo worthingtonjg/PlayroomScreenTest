@@ -22,7 +22,7 @@ See [PLAYROOM.md](./PLAYROOM.md). The public project gameId is prefilled. Connec
 
 ## Verification
 
-`npm test` runs thirteen tests covering tile changes and mocked synthetic input/RPC handling. JavaScript syntax checks pass. Mocked tests and static hosting checks are not real Playroom delivery evidence. Live browser automation was unavailable during development; the reported live input issue has not been reproduced or proven resolved. On-screen diagnostics separate detection, send attempts, receipt, application, and image acknowledgement.
+`npm test` runs sixteen tests covering tile changes and mocked synthetic input/RPC handling. JavaScript syntax checks pass. Mocked tests and static hosting checks are not real Playroom delivery evidence. Live browser automation was unavailable during development; the reported live input issue has not been reproduced or proven resolved. On-screen diagnostics separate detection, send attempts, receipt, application, and image acknowledgement.
 
 Generated pixels, fixed demo actions, and the contents of the explicitly labeled Viewer textarea are sent through Playroom. The local baseline's dummy text stays in same-origin browser tabs. No OS capture, native input injection, shell execution, remote-desktop functionality, or stored credentials are included.
 
@@ -31,3 +31,7 @@ Generated pixels, fixed demo actions, and the contents of the explicitly labeled
 Connect Source and Viewer, then type in the Viewer's Shared text box. The Source displays the received content as read-only text before, during, and after the image run. Changes, Backspace, paste, and clearing send content snapshots after a 400 ms pause, at most twice per second. IME composition is sent after completion. Limits: 1,024 characters and 8 KiB per text snapshot; text has a separate budget from images and no frame-window gate. Text is not stored by this application.
 
 Receipt status confirms a Source response, not merely a send attempt. If Source joined later or a response timed out, use Send current text. Disconnect unloads the SDK by reloading the page into its initial disconnected state; pending edits are canceled and unsent text is discarded. Reconnect explicitly. Share only text intended for the other participant. This is ordinary in-app content sharing, not keyboard forwarding.
+
+## Separate pages
+
+Use [Host](./host.html) on the receiving device and [Viewer](./viewer.html) on the typing device. Roles are fixed; no selector is needed. The old service link is now a chooser. Connect Host first, copy its room code into Viewer, and Connect there. The Viewer textarea is editable immediately for local drafts; after connection, edits are shared. Use Send current text for a draft entered before connecting. Images remain a separate bounded test controlled by Host.
