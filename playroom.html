@@ -1,11 +1,17 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Bounded Playroom synthetic test</title>
-<style>body{font:16px system-ui;max-width:850px;margin:32px auto;padding:16px;background:#101827;color:#e3eaf5}input,select,button{font:inherit;margin:6px;padding:8px}canvas{width:480px;max-width:100%;image-rendering:pixelated;border:2px solid #7694bb;display:block;margin:20px 0}a{color:#80d5ff}pre{white-space:pre-wrap}</style>
+<style>body{font:16px system-ui;max-width:850px;margin:32px auto;padding:16px;background:#101827;color:#e3eaf5}input,select,button{font:inherit;margin:6px;padding:8px}canvas{width:480px;max-width:100%;image-rendering:pixelated;border:2px solid #7694bb;display:block;margin:20px 0}a{color:#80d5ff}pre{white-space:pre-wrap}input,select,button{max-width:100%;box-sizing:border-box}pre{overflow-wrap:anywhere}</style>
 <h1>Playroom: tiny synthetic trial</h1><p><a href="./">Return to local baseline</a></p>
-<p>Connecting loads Playroom Kit from its documented CDN and contacts the external service. Only generated pixels and fixed demo actions are sent. No typed characters are transmitted. Close both tabs to disconnect.</p>
+<p>Connecting loads Playroom Kit and contacts the external service. The Viewer text box shares its contents with the Source. The separate canvas test sends generated pixels and fixed demo actions.</p>
 <label>Role <select id="role"><option value="source">Source</option><option value="viewer">Viewer</option></select></label><br>
 <label>Project gameId <input id="gameId" value="zizUPApGovIFKQQGxIAO" autocomplete="off"></label><br>
 <label>Room code (required for viewer) <input id="room" autocomplete="off"></label><br>
 <button id="connect">Connect to Playroom</button>
+<button id="disconnect" disabled>Disconnect</button>
+<section><h2>Shared text</h2>
+<div id="viewerText"><label for="sharedText">Viewer text (up to 1,024 characters)</label><br><textarea id="sharedText" rows="4" maxlength="1024" disabled style="width:100%;box-sizing:border-box;font:16px system-ui;min-height:120px"></textarea><br><button id="sendText" disabled>Send current text</button></div>
+<div id="sourceText" hidden><p>Received viewer text (read-only)</p><pre id="receivedText" style="min-height:4em;border:1px solid #7694bb;padding:12px;overflow-wrap:anywhere"></pre></div>
+<p id="textStatus" aria-live="polite">Connect to share text. Image frames do not need to be running.</p></section>
+<h2>Bounded image test</h2>
 <label>Mode <select id="mode"><option value="full">Full PNG</option><option value="tiles">Changed 32px tiles</option></select></label>
 <button id="start" disabled>Send 10 frames at 1 fps</button>
 <canvas id="canvas" width="160" height="96" tabindex="0" aria-label="Tiny synthetic test canvas"></canvas>

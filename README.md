@@ -1,6 +1,6 @@
 # PlayroomScreenTest
 
-A small browser-only synthetic canvas experiment. No screen capture or operating-system input. The default page exchanges generated PNG images between tabs through BroadcastChannel. The optional Playroom page exchanges a tiny generated canvas and fixed demo actions through Playroom RPC.
+A small browser-only synthetic canvas experiment. No screen capture or operating-system input. The default page exchanges generated PNG images between tabs through BroadcastChannel. The optional Playroom page exchanges a tiny generated canvas, fixed demo actions, and explicit textarea content through Playroom RPC.
 
 ## Open
 
@@ -22,6 +22,12 @@ See [PLAYROOM.md](./PLAYROOM.md). The public project gameId is prefilled. Connec
 
 ## Verification
 
-`npm test` runs seven tests covering tile changes and mocked synthetic input/RPC handling. JavaScript syntax checks pass. Mocked tests and static hosting checks are not real Playroom delivery evidence. Live browser automation was unavailable during development; the reported live input issue has not been reproduced or proven resolved. On-screen diagnostics separate detection, send attempts, receipt, application, and image acknowledgement.
+`npm test` runs twelve tests covering tile changes and mocked synthetic input/RPC handling. JavaScript syntax checks pass. Mocked tests and static hosting checks are not real Playroom delivery evidence. Live browser automation was unavailable during development; the reported live input issue has not been reproduced or proven resolved. On-screen diagnostics separate detection, send attempts, receipt, application, and image acknowledgement.
 
-Only generated pixels and fixed demo actions are sent through Playroom. The local baseline's dummy text stays in same-origin browser tabs. No OS capture, native input injection, shell execution, remote-desktop functionality, or stored credentials are included.
+Generated pixels, fixed demo actions, and the contents of the explicitly labeled Viewer textarea are sent through Playroom. The local baseline's dummy text stays in same-origin browser tabs. No OS capture, native input injection, shell execution, remote-desktop functionality, or stored credentials are included.
+
+### Shared text (independent of frames)
+
+Connect Source and Viewer, then type in the Viewer's Shared text box. The Source displays the received content as read-only text before, during, and after the image run. Changes, Backspace, paste, and clearing send content snapshots after a 400 ms pause, at most twice per second. IME composition is sent after completion. Limits: 1,024 characters and 8 KiB per text snapshot; text has a separate budget from images and no frame-window gate. Text is not stored by this application.
+
+Receipt status confirms a Source response, not merely a send attempt. If Source joined later or a response timed out, use Send current text. Disconnect unloads the SDK by reloading the page into its initial disconnected state; pending edits are canceled and unsent text is discarded. Reconnect explicitly. Share only text intended for the other participant. This is ordinary in-app content sharing, not keyboard forwarding.

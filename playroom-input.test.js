@@ -7,8 +7,8 @@ function harness(){
  const elements=new Map(),calls=[];
  const context={fillRect(){},fillText(){}};
  const get=id=>{if(!elements.has(id))elements.set(id,{textContent:'',getContext:()=>context,focus(){this.onfocus?.();}});return elements.get(id);};
- const source=readFileSync(new URL('./playroom.js',import.meta.url),'utf8').replace(/^import .*\n/,'');
- const sandbox={document:{getElementById:get},TextEncoder,performance:{now:()=>1000},crypto:{randomUUID:()=> 'dummy-id'},clearInterval(){},setTimeout(){},setInterval(){},calls};
+ const source=readFileSync(new URL('./playroom.js',import.meta.url),'utf8').replace(/^import .*\n/gm,'');
+ const sandbox={createTextSharing:()=>({resend(){},disconnect(){}}),document:{getElementById:get},TextEncoder,performance:{now:()=>1000},crypto:{randomUUID:()=> 'dummy-id'},clearInterval(){},setTimeout(){},setInterval(){},calls};
  vm.runInNewContext(source+`\n globalThis.testApi={input:demoAction,receive,rpcHandler,setPeer(peer){sdk.RPC.call=async(...args)=>{calls.push(args);return peer(args[1],{id:'viewer-test'});};},set(options){({connected,role,received,until,active}={connected:true,role:'viewer',received:1,until:2000,active:false,...options});sdk={RPC:{Mode:{OTHERS:'others'},call:async(...args)=>calls.push(args)}};}};`,sandbox);
  return {api:sandbox.testApi,get,calls};
 }

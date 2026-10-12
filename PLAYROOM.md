@@ -6,7 +6,7 @@ Open [the service page](./playroom.html) in two tabs or windows. The public brow
 2. Second tab: choose **Viewer**, enter the source's displayed room code, and Connect.
 3. Check both display the same room and different player IDs. Source role does not need to match the elected host; RPC uses OTHERS.
 4. On Source choose full PNG or changed 32px tiles, then **Send 10 frames at 1 fps**.
-5. Immediately click the viewer canvas and type slowly during frames 1-9. Each click/letter cycles the number after `const demo =`; actual characters are never sent or displayed as text.
+5. Immediately click the viewer canvas and type slowly during frames 1-9. Each click/letter cycles the number after `const demo =`; the canvas action never sends characters. The separate Shared text box sends its contents as text.
 6. Close both tabs after the trial. Reload BOTH tabs and reconnect for a fresh run or another mode.
 
 ## Diagnosing input
@@ -28,7 +28,7 @@ These caps are experiment choices, not Playroom guarantees. Numeric service limi
 
 ## Verification status
 
-Seven local tests pass, including a mocked viewer-to-source RPC response and inactive-run rejection. No live Playroom round-trip was verified by automation; browser startup was blocked. The user's reported live input-delivery symptom is not proven fixed. Static deployment checks only establish that files are hosted correctly.
+Twelve local tests pass, including a mocked viewer-to-source RPC response and inactive-run rejection. No live Playroom round-trip was verified by automation; browser startup was blocked. The user's reported live input-delivery symptom is not proven fixed. Static deployment checks only establish that files are hosted correctly.
 
 The public gameId comes from the user's Playroom project. No credentials or account changes are part of this repository. If using a different project, enter its public gameId in the page. The SDK CDN URL follows the official unversioned example; future SDK changes may require checking compatibility.
 
@@ -38,3 +38,9 @@ Official references:
 - https://docs.joinplayroom.com/api-reference/js/InitOptions
 - https://docs.joinplayroom.com/api-reference/js/RPC/register
 - https://docs.joinplayroom.com/api-reference/js/RPC/call
+
+## Shared textarea
+
+After both participants connect, type in the Viewer Shared text textarea and read it in the Source panel. No frames need to run. Clear and Backspace are shared as full snapshots, including an empty string. Text snapshots use a separate RPC with a 400 ms debounce, maximum two attempts/sec, a 1,024-character limit, and an 8 KiB message limit. Composition waits until completion; newer revisions supersede older snapshots. The source uses textContent, so markup stays literal. Pending text is canceled on disconnect. Disconnect reloads the document to unload the SDK; reconnect requires Connect again. No persistence is provided.
+
+Text delivery has a three-second receipt timeout and no automatic retries. Send current text retries explicitly, including after reconnect or when the Source joins late. Test coverage includes edits/clear, rapid changes, composition, disconnect/reconnect, stale revisions, limits, and receipt timeout. These remain mocked local tests; real Playroom exchange has not been verified by automation.

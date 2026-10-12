@@ -1,10 +1,15 @@
 import {changedTiles} from './diff.js';
+import {createTextSharing} from './shared-text.js';
 const $=id=>document.getElementById(id),canvas=$('canvas'),ctx=canvas.getContext('2d',{willReadFrequently:true});
 let sdk,role,connected=false,active=false,used=false,timer,previous=null,sequence=0,received=0,total=0,actions=0,value=0,ack=null,last=0;
 let pending=new Map(),lastInput=-Infinity,until=0,localInputs=0,shownActions=0;
 let rpcCallbacks=0,actionReceipts=0,sendAttempts=0,sourceReplies=0;
 const encoder=new TextEncoder(),name='syntheticCanvasTrialV1';
 const report=s=>$('status').textContent=s;
+const textSharing=createTextSharing({editor:$('sharedText'),output:$('receivedText'),status:$('textStatus'),session:crypto.randomUUID(),send:message=>sdk.RPC.call('syntheticTextV1',message,sdk.RPC.Mode.OTHERS)});
+$('sendText').onclick=()=>textSharing.resend();
+function disconnected(){connected=false;active=false;clearInterval(timer);textSharing.disconnect();$('start').disabled=true;$('sendText').disabled=true;report('Disconnected. Reload this page to reconnect.');}
+$('disconnect').onclick=()=>{disconnected();location.replace(location.pathname+location.search);};
 const feedback=s=>$('inputStatus').textContent=`Local inputs: ${localInputs}; action send attempts: ${sendAttempts}; confirmed source replies: ${sourceReplies}; RPC callbacks: ${rpcCallbacks}; source action callbacks: ${actionReceipts}; source actions applied: ${role==='source'?actions:shownActions}. ${s}`;
 function stop(reason){active=false;clearInterval(timer);$('start').disabled=true;report(reason+' Run ended. Reload BOTH tabs and reconnect to start another bounded run.');}
 function draw(){ctx.fillStyle='#152034';ctx.fillRect(0,0,160,96);ctx.fillStyle='#8ee7bc';ctx.font='10px monospace';ctx.fillText('// synthetic',8,16);ctx.fillText('const demo = '+value,8,34);ctx.fillStyle='#69baff';ctx.fillRect(8+(sequence*9)%120,64,12,12);}
@@ -80,7 +85,10 @@ $('connect').onclick=async()=>{
    history.replaceState(null,'',location.pathname+location.search);
    await sdk.insertCoin({gameId,skipLobby:true,maxPlayersPerRoom:2,...(roomCode?{roomCode}:{})});
    sdk.RPC.register(name,rpcHandler);
+   sdk.RPC.register('syntheticTextV1',async message=>textSharing.receive(message));
+   sdk.onDisconnect(disconnected);
    connected=true;
+   textSharing.connect(role);$('viewerText').hidden=role!=='viewer';$('sourceText').hidden=role!=='source';$('sendText').disabled=role!=='viewer';$('disconnect').disabled=false;
    for(const id of ['role','gameId','room'])$(id).disabled=true;
    $('start').disabled=role!=='source';report(`Connected as ${role}. Room: ${sdk.getRoomCode()}. No images sent yet.`);
    $('connectionStatus').textContent=`Role: ${role}; room: ${sdk.getRoomCode()}; player: ${sdk.myPlayer().id}; elected host: ${sdk.isHost()}. Both tabs must have the same room and different player IDs. RPC targets OTHERS, not HOST.`;
