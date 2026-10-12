@@ -3,13 +3,14 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {createMeasurements} from './measurements.js';
+import {drawSynthetic,encodeFrame,imageSizes,checkImageBudget,validFrame} from './image-trial.js';
 
 function harness(){
  const elements=new Map(),calls=[];
- const context={fillRect(){},fillText(){}};
- const get=id=>{if(!elements.has(id))elements.set(id,{textContent:'',getContext:()=>context,focus(){this.onfocus?.();}});return elements.get(id);};
+ const context={fillRect(){},fillText(){},save(){},restore(){},setTransform(){},drawImage(){}};
+ const get=id=>{if(!elements.has(id))elements.set(id,{width:160,height:96,textContent:'',getContext:()=>context,focus(){this.onfocus?.();}});return elements.get(id);};
  const source=readFileSync(new URL('./playroom.js',import.meta.url),'utf8').replace(/^import .*\n/gm,'');
- const sandbox={createMeasurements,createTextSharing:()=>({resend(){},disconnect(){},selectRole(){}}),document:{getElementById:get},TextEncoder,performance:{now:()=>1000},crypto:{randomUUID:()=> 'dummy-id'},clearInterval(){},setTimeout(){},setInterval(){},calls};
+ const sandbox={drawSynthetic,encodeFrame,imageSizes,checkImageBudget,validFrame,fetch:async()=>({blob:async()=>({})}),createImageBitmap:async()=>({close(){}}),createMeasurements,createTextSharing:()=>({resend(){},disconnect(){},selectRole(){}}),document:{getElementById:get},TextEncoder,performance:{now:()=>1000},crypto:{randomUUID:()=> 'dummy-id'},clearInterval(){},setTimeout(){},setInterval(){},calls};
  vm.runInNewContext(source+`\n globalThis.testApi={input:demoAction,receive,rpcHandler,setPeer(peer){sdk.RPC.call=async(...args)=>{calls.push(args);return peer(args[1],{id:'viewer-test'});};},set(options){({connected,role,received,until,active}={connected:true,role:'viewer',received:1,until:2000,active:false,...options});sdk={RPC:{Mode:{OTHERS:'others'},call:async(...args)=>calls.push(args)}};}};`,sandbox);
  return {api:sandbox.testApi,get,calls};
 }
@@ -44,7 +45,7 @@ test('late action counts callback receipt separately from applied state',async()
 });
 test('viewer returns sequence-specific draw ack only for accepted frame sequence',async()=>{
  const h=harness();h.api.set({received:0});
- const reply=await h.api.rpcHandler(JSON.stringify({type:'frame',sequence:1,full:true,patches:[]}),{id:'host'});
+ const reply=await h.api.rpcHandler(JSON.stringify({type:'frame',sequence:1,width:160,height:96,full:true,patches:[{x:0,y:0,w:160,h:96,url:'data:image/png;base64,AA=='}]}),{id:'host'});
  assert.equal(reply.role,'viewer');assert.equal(reply.drawn,1);
  const missing=await h.api.rpcHandler(JSON.stringify({type:'frame',sequence:3,full:false,patches:[]}),{id:'host'});
  assert.equal(missing.drawn,undefined);

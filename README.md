@@ -22,7 +22,7 @@ See [PLAYROOM.md](./PLAYROOM.md). The public project gameId is prefilled. Connec
 
 ## Verification
 
-`npm test` runs twenty tests covering tile changes and mocked synthetic input/RPC handling. JavaScript syntax checks pass. Mocked tests and static hosting checks are not real Playroom delivery evidence. Live browser automation was unavailable during development; the reported live input issue has not been reproduced or proven resolved. On-screen diagnostics separate detection, send attempts, receipt, application, and image acknowledgement.
+`npm test` runs twenty-three tests covering tile changes and mocked synthetic input/RPC handling. JavaScript syntax checks pass. Mocked tests and static hosting checks are not real Playroom delivery evidence. Live browser automation was unavailable during development; the reported live input issue has not been reproduced or proven resolved. On-screen diagnostics separate detection, send attempts, receipt, application, and image acknowledgement.
 
 Generated pixels, fixed demo actions, and the contents of the explicitly labeled Viewer textarea are sent through Playroom. The local baseline's dummy text stays in same-origin browser tabs. No OS capture, native input injection, shell execution, remote-desktop functionality, or stored credentials are included.
 
@@ -43,3 +43,13 @@ The panel reports text request-to-source-ack RTT, image-send-to-viewer-draw-ack 
 Application byte counters count UTF-8 message bodies and replies (including PNG base64). They exclude RPC envelopes, SDK signaling, network headers, encryption, retransmissions and transport overhead. They are not measured network bandwidth. Reset and reconnect clear measurement counters and invalidate old pending samples; neither overrides frame/traffic limits. No probes or periodic traffic were added.
 
 Manual comparison: reset both panels, send a short text and clear it; record Viewer text RTT and Host receipt count. Start one ten-frame image run and record Host draw-ack RTT and Viewer frame receipts. Repeat after explicitly reconnecting, optionally with the Viewer on another network. No cross-network or physical-device timing results are claimed by the automated tests.
+
+## Larger full-frame / tile comparison
+
+Keep the existing 160x96 interactive test, or select a fixed 320x192 or 640x360 scene on Host. Choose Full PNG, connect Viewer, and click Send. Before transmission the browser encodes all ten selected frames and checks the unchanged 8 KiB/message and 64 KiB image-session caps. Oversize runs send no image frames; choose a smaller size. Whether a particular browser's PNG encoder fits the larger size is established by this local preflight, not assumed from tests.
+
+For comparison, note Image request bytes only, matched image acknowledgements, and image RTT. Reload BOTH pages, reconnect, select the SAME size with Changed tiles, and run again. Each fixed comparison uses the same ten animation positions and initial value; canvas actions cannot alter it. Avoid unrelated text edits during timing comparisons. Text sharing still works independently and its payload bytes are excluded from the image-only counter. Preflight totals exclude reply/SDK overhead. Starting the image run resets measurements, but never raises the traffic caps.
+
+Changed mode sends one full baseline followed by 32px tiles. The Viewer validates dimensions and sequence; missing delta baseline yields a rejection, stopping subsequent sends when the Host receives it. No automatic retries or keyframe traffic is added. A missing acknowledgement remains unmatched in the counter; it is not assigned a latency value. Full frames can recover from sequence gaps. Image RTT still starts after encoding and includes decode/draw plus acknowledgement, not one-way latency or screen presentation.
+
+Twenty-three local tests cover deterministic draw commands, byte caps, dimension/baseline validation, RTT/byte counters, and existing input behavior. Actual PNG sizes and performance for the new larger options have not been measured through a live browser/service test.

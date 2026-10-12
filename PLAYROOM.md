@@ -22,13 +22,13 @@ Input before the first frame, after frame ten, outside the recent-frame window, 
 
 ## Limits
 
-Two participants; 160x96 generated canvas; ten frame attempts over ten seconds per connection; twenty fixed input actions at most, throttled to two per second. Outgoing application JSON is capped at 8 KiB/message and 64 KiB/tab. SDK signaling, RPC wrappers/responses and network overhead are excluded from those counters. Close the tabs to terminate the SDK connection after the bounded frame run.
+Two participants; selectable 160x96, 320x192, or 640x360 generated canvas; ten frame attempts over ten seconds per connection; twenty fixed input actions at most, throttled to two per second. Outgoing application JSON is capped at 8 KiB/message and 64 KiB/tab. SDK signaling, RPC wrappers/responses and network overhead are excluded from those counters. Close the tabs to terminate the SDK connection after the bounded frame run.
 
 These caps are experiment choices, not Playroom guarantees. Numeric service limits and suitability for image streaming remain unverified. Changed tiles need an initial full frame; a missing sequence requires a fresh run. Keep both windows visible to reduce browser throttling. Input-to-image timing includes frame scheduling, encoding, transport, decoding and drawing, but not physical screen presentation.
 
 ## Verification status
 
-Twenty local tests pass, including a mocked viewer-to-source RPC response and inactive-run rejection. No live Playroom round-trip was verified by automation; browser startup was blocked. The user's reported live input-delivery symptom is not proven fixed. Static deployment checks only establish that files are hosted correctly.
+Twenty-three local tests pass, including a mocked viewer-to-source RPC response and inactive-run rejection. No live Playroom round-trip was verified by automation; browser startup was blocked. The user's reported live input-delivery symptom is not proven fixed. Static deployment checks only establish that files are hosted correctly.
 
 The public gameId comes from the user's Playroom project. No credentials or account changes are part of this repository. If using a different project, enter its public gameId in the page. The SDK CDN URL follows the official unversioned example; future SDK changes may require checking compatibility.
 

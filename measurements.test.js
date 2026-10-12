@@ -13,6 +13,7 @@ test('byte counters use UTF-8 application bodies and include responses',()=>{
  m.received('text',{text:'😀'});m.reply({received:true});
  const bytes=v=>new TextEncoder().encode(JSON.stringify(v)).length;
  assert.equal(m.snapshot().sentBytes,2+bytes({received:true}));
+ assert.equal(m.snapshot().image.requestBytes,2);
  assert.equal(m.snapshot().receivedBytes,bytes({drawn:1})+bytes({text:'😀'}));assert.equal(m.snapshot().text.received,1);
 });
 test('reset/reconnect clears counts and ignores old in-flight acknowledgements',()=>{
