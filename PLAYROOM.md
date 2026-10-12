@@ -28,7 +28,7 @@ These caps are experiment choices, not Playroom guarantees. Numeric service limi
 
 ## Verification status
 
-Twenty-three local tests pass, including a mocked viewer-to-source RPC response and inactive-run rejection. No live Playroom round-trip was verified by automation; browser startup was blocked. The user's reported live input-delivery symptom is not proven fixed. Static deployment checks only establish that files are hosted correctly.
+Twenty-seven local tests pass, including a mocked viewer-to-source RPC response and inactive-run rejection. No live Playroom round-trip was verified by automation; browser startup was blocked. The user's reported live input-delivery symptom is not proven fixed. Static deployment checks only establish that files are hosted correctly.
 
 The public gameId comes from the user's Playroom project. No credentials or account changes are part of this repository. If using a different project, enter its public gameId in the page. The SDK CDN URL follows the official unversioned example; future SDK changes may require checking compatibility.
 

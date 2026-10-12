@@ -4,13 +4,14 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {createMeasurements} from './measurements.js';
 import {drawSynthetic,encodeFrame,imageSizes,checkImageBudget,validFrame} from './image-trial.js';
+import {drawComparison} from './comparison-scene.js';
 
 function harness(){
  const elements=new Map(),calls=[];
  const context={fillRect(){},fillText(){},save(){},restore(){},setTransform(){},drawImage(){}};
  const get=id=>{if(!elements.has(id))elements.set(id,{width:160,height:96,textContent:'',getContext:()=>context,focus(){this.onfocus?.();}});return elements.get(id);};
  const source=readFileSync(new URL('./playroom.js',import.meta.url),'utf8').replace(/^import .*\n/gm,'');
- const sandbox={drawSynthetic,encodeFrame,imageSizes,checkImageBudget,validFrame,fetch:async()=>({blob:async()=>({})}),createImageBitmap:async()=>({close(){}}),createMeasurements,createTextSharing:()=>({resend(){},disconnect(){},selectRole(){}}),document:{getElementById:get},TextEncoder,performance:{now:()=>1000},crypto:{randomUUID:()=> 'dummy-id'},clearInterval(){},setTimeout(){},setInterval(){},calls};
+ const sandbox={drawComparison,drawSynthetic,encodeFrame,imageSizes,checkImageBudget,validFrame,fetch:async()=>({blob:async()=>({})}),createImageBitmap:async()=>({close(){}}),createMeasurements,createTextSharing:()=>({resend(){},disconnect(){},selectRole(){}}),document:{getElementById:get},TextEncoder,performance:{now:()=>1000},crypto:{randomUUID:()=> 'dummy-id'},clearInterval(){},setTimeout(){},setInterval(){},calls};
  vm.runInNewContext(source+`\n globalThis.testApi={input:demoAction,receive,rpcHandler,setPeer(peer){sdk.RPC.call=async(...args)=>{calls.push(args);return peer(args[1],{id:'viewer-test'});};},set(options){({connected,role,received,until,active}={connected:true,role:'viewer',received:1,until:2000,active:false,...options});sdk={RPC:{Mode:{OTHERS:'others'},call:async(...args)=>calls.push(args)}};}};`,sandbox);
  return {api:sandbox.testApi,get,calls};
 }

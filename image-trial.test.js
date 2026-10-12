@@ -7,8 +7,8 @@ test('both modes can replay identical deterministic drawing commands at each sup
 });
 test('preflight enforces existing per-message and session limits without raising them',()=>{
  assert.equal(checkImageBudget(Array.from({length:10},()=>({payload:'x'.repeat(1000)}))).ok,true);
- assert.match(checkImageBudget([{payload:'x'.repeat(8192)}]).reason,/8 KiB/);
- assert.match(checkImageBudget(Array.from({length:10},()=>({payload:'x'.repeat(7000)}))).reason,/64 KiB/);
+ assert.match(checkImageBudget([{payload:'x'.repeat(8192)}]).reason,/8192/);
+ assert.match(checkImageBudget(Array.from({length:10},()=>({payload:'x'.repeat(7000)}))).reason,/65536/);
  assert.equal(checkImageBudget([{payload:'x'}],65536).ok,false);
 });
 test('larger delta requires matching dimensions and baseline; full frame permits recovery',()=>{

@@ -15,9 +15,9 @@ export function encodeFrame(canvas,ctx,previous,mode,sequence,extra={}){
 }
 export function checkImageBudget(messages,alreadySent=0){
  const sizes=messages.map(m=>new TextEncoder().encode(JSON.stringify(m)).length);
- if(sizes.some(n=>n>8192))return {ok:false,reason:'A frame exceeds the 8 KiB message cap. Choose a smaller size.',sizes};
+ if(sizes.some(n=>n>8192))return {ok:false,reason:`Largest frame is ${Math.max(...sizes)} bytes; cap is 8192 bytes. Reload the latest Host page and select a fixed comparison size.`,sizes};
  const total=sizes.reduce((a,b)=>a+b,0);
- if(total+alreadySent>65536)return {ok:false,reason:'The ten-frame run exceeds the 64 KiB image session cap. Choose a smaller size.',sizes,total};
+ if(total+alreadySent>65536)return {ok:false,reason:`Run needs ${total} bytes with ${alreadySent} already sent; session cap is 65536 bytes. Reload both pages for a fresh session.`,sizes,total};
  return {ok:true,sizes,total};
 }
 export function validFrame(m,last,width,height){

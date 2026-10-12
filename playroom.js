@@ -1,11 +1,12 @@
 import {drawSynthetic,encodeFrame,imageSizes,checkImageBudget,validFrame} from './image-trial.js';
 import {createTextSharing} from './shared-text.js';
 import {createMeasurements} from './measurements.js';
+import {drawComparison} from './comparison-scene.js';
 const $=id=>document.getElementById(id),canvas=$('canvas'),ctx=canvas.getContext('2d',{willReadFrequently:true});
 let sdk,role,connected=false,active=false,used=false,timer,previous=null,sequence=0,received=0,total=0,actions=0,value=0,ack=null,last=0;
 let pending=new Map(),lastInput=-Infinity,until=0,localInputs=0,shownActions=0;
 let rpcCallbacks=0,actionReceipts=0,sendAttempts=0,sourceReplies=0;
-let preparedFrames=[],comparison=false;
+let preparedFrames=[],comparison=false,preparing=false;
 const encoder=new TextEncoder(),name='syntheticCanvasTrialV1';
 const report=s=>$('status').textContent=s;
 const measurements=createMeasurements({changed:m=>{
@@ -23,7 +24,7 @@ function disconnected(){connected=false;active=false;clearInterval(timer);textSh
 $('disconnect').onclick=()=>{disconnected();location.replace(location.pathname+location.search);};
 const feedback=s=>$('inputStatus').textContent=`Local inputs: ${localInputs}; action send attempts: ${sendAttempts}; confirmed source replies: ${sourceReplies}; RPC callbacks: ${rpcCallbacks}; source action callbacks: ${actionReceipts}; source actions applied: ${role==='source'?actions:shownActions}. ${s}`;
 function stop(reason){active=false;clearInterval(timer);$('start').disabled=true;report(reason+' Run ended. Reload BOTH tabs and reconnect to start another bounded run.');}
-function draw(){drawSynthetic(ctx,canvas.width,canvas.height,sequence,value);}
+function draw(){if(comparison)drawComparison(ctx,canvas.width,canvas.height,sequence);else drawSynthetic(ctx,canvas.width,canvas.height,sequence,value);}
 draw();
 async function send(message){
  const wire=JSON.stringify(message),size=encoder.encode(wire).length;
@@ -110,15 +111,21 @@ $('connect').onclick=async()=>{
    feedback(role==='viewer'?'Waiting for source to start. Click canvas to focus it; input works while frames 1-9 arrive.':'Viewer must connect before you start. Watch source action count here.');
  }catch(e){report('Connection failed: '+e.message+'. Reload to retry.');}
 };
-$('start').onclick=()=>{
- if(!connected||role!=='source'||used)return;
+$('start').onclick=async()=>{
+ if(!connected||role!=='source'||used||preparing)return;
+ preparing=true;$('start').disabled=true;$('mode').disabled=true;$('size').disabled=true;
+ const preparationFailed=message=>{preparing=false;report(message+' No image frames sent.');$('start').disabled=!connected;$('mode').disabled=false;$('size').disabled=false;};
  const dimensions=imageSizes[$('size').value]??imageSizes.small;
  [canvas.width,canvas.height]=dimensions;comparison=$('size').value!=='small';
  value=0;sequence=0;previous=null;ack=null;actions=0;preparedFrames=[];
- let baseline=null;
- for(let i=0;i<10;i++){drawSynthetic(ctx,canvas.width,canvas.height,i,0);const encoded=encodeFrame(canvas,ctx,baseline,$('mode').value,i+1,{ack:null,sourceActions:0,comparison});baseline=encoded.pixels;preparedFrames.push(encoded.message);}
+ try{
+   if(comparison){const response=await fetch(`./fixtures/${$('size').value}-${$('mode').value}.json`);if(!response.ok)throw new Error('Comparison fixtures unavailable. Reload the latest Host page.');preparedFrames=await response.json();}
+   else {let baseline=null;for(let i=0;i<10;i++){drawSynthetic(ctx,canvas.width,canvas.height,i,0);const encoded=encodeFrame(canvas,ctx,baseline,$('mode').value,i+1,{ack:null,sourceActions:0,comparison});baseline=encoded.pixels;preparedFrames.push(encoded.message);}}
+ }catch(error){preparationFailed(error.message);return;}
+ if(!connected){preparationFailed('Disconnected during preparation.');return;}
  const budget=checkImageBudget(preparedFrames,total);draw();
- if(!budget.ok){report(budget.reason+' No image frames sent.');return;}
+ if(!budget.ok){preparationFailed(budget.reason);return;}
+ preparing=false;
  $('imagePlan').textContent=`${canvas.width} x ${canvas.height}; ${$('mode').value}; 10 frames / 1 fps; preflight JSON ${budget.total} bytes; maximum frame ${Math.max(...budget.sizes)} bytes. ${comparison?'Fixed scene: canvas actions disabled.':'Small interactive test: later actions can change actual bytes.'}`;
  measurements.reset();used=true;active=true;$('start').disabled=true;$('mode').disabled=true;$('size').disabled=true;
  feedback(comparison?'Deterministic comparison started. Shared text remains independent.':'Run started. Click/type in the VIEWER canvas now.');
