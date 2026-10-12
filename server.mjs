@@ -1,6 +1,6 @@
 import http from 'node:http';
 import {readFile} from 'node:fs/promises';
-const files = {'/':'index.html','/app.js':'app.js','/diff.js':'diff.js','/playroom.html':'playroom.html','/host.html':'host.html','/viewer.html':'viewer.html','/playroom.js':'playroom.js','/shared-text.js':'shared-text.js'};
+const files = {'/':'index.html','/app.js':'app.js','/diff.js':'diff.js','/playroom.html':'playroom.html','/host.html':'host.html','/viewer.html':'viewer.html','/playroom.js':'playroom.js','/shared-text.js':'shared-text.js','/measurements.js':'measurements.js'};
 http.createServer(async(req,res)=>{
   const file=files[new URL(req.url,'http://localhost').pathname];
   if(!file){res.writeHead(404);return res.end('Not found');}

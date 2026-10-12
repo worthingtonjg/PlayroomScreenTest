@@ -1,17 +1,24 @@
 import {changedTiles} from './diff.js';
 import {createTextSharing} from './shared-text.js';
+import {createMeasurements} from './measurements.js';
 const $=id=>document.getElementById(id),canvas=$('canvas'),ctx=canvas.getContext('2d',{willReadFrequently:true});
 let sdk,role,connected=false,active=false,used=false,timer,previous=null,sequence=0,received=0,total=0,actions=0,value=0,ack=null,last=0;
 let pending=new Map(),lastInput=-Infinity,until=0,localInputs=0,shownActions=0;
 let rpcCallbacks=0,actionReceipts=0,sendAttempts=0,sourceReplies=0;
 const encoder=new TextEncoder(),name='syntheticCanvasTrialV1';
 const report=s=>$('status').textContent=s;
-const textSharing=createTextSharing({editor:$('sharedText'),output:$('receivedText'),status:$('textStatus'),session:crypto.randomUUID(),send:message=>sdk.RPC.call('syntheticTextV1',message,sdk.RPC.Mode.OTHERS)});
+const measurements=createMeasurements({changed:m=>{
+ const timing=(title,r)=>`${title}: ${r.acks}/${r.attempts} matched acks; requests received here: ${r.received}; last/mean RTT: ${r.acks?r.lastMs.toFixed(1)+' / '+(r.totalMs/r.acks).toFixed(1)+' ms':'--'}`;
+ $('measurements').textContent=`Application payload bytes attempted out / received in: ${m.sentBytes} / ${m.receivedBytes}\n${timing('Text request -> source ack',m.text)}\n${timing('Image send -> viewer draw ack',m.image)}\n${timing('Canvas action -> source reply',m.action)}`;
+}});
+$('resetMeasurements').onclick=()=>measurements.reset();
+async function measuredCall(kind,rpc,payload,match){const token=measurements.begin(kind,payload);const reply=await sdk.RPC.call(rpc,payload,sdk.RPC.Mode.OTHERS);measurements.finish(token,reply,match(reply));return reply;}
+const textSharing=createTextSharing({editor:$('sharedText'),output:$('receivedText'),status:$('textStatus'),session:crypto.randomUUID(),send:message=>measuredCall('text','syntheticTextV1',message,r=>r?.received===true&&r.session===message.session&&r.revision===message.revision)});
 function selectTextRole(){if(connected)return;const selected=$('role').value;textSharing.selectRole(selected);$('viewerText').hidden=selected!=='viewer';$('sourceText').hidden=selected!=='source';}
 $('role').onchange=selectTextRole;
 selectTextRole();
 $('sendText').onclick=()=>textSharing.resend();
-function disconnected(){connected=false;active=false;clearInterval(timer);textSharing.disconnect();$('start').disabled=true;$('sendText').disabled=true;report('Disconnected. Reload this page to reconnect.');}
+function disconnected(){connected=false;active=false;clearInterval(timer);textSharing.disconnect();measurements.reset();$('start').disabled=true;$('sendText').disabled=true;report('Disconnected. Reload this page to reconnect.');}
 $('disconnect').onclick=()=>{disconnected();location.replace(location.pathname+location.search);};
 const feedback=s=>$('inputStatus').textContent=`Local inputs: ${localInputs}; action send attempts: ${sendAttempts}; confirmed source replies: ${sourceReplies}; RPC callbacks: ${rpcCallbacks}; source action callbacks: ${actionReceipts}; source actions applied: ${role==='source'?actions:shownActions}. ${s}`;
 function stop(reason){active=false;clearInterval(timer);$('start').disabled=true;report(reason+' Run ended. Reload BOTH tabs and reconnect to start another bounded run.');}
@@ -23,7 +30,7 @@ async function send(message){
  total+=size;
  try{
    if(message.type==='action')sendAttempts++;
-   const response=await sdk.RPC.call(name,wire,sdk.RPC.Mode.OTHERS);
+   const response=await measuredCall(message.type==='frame'?'image':'action',name,wire,r=>message.type==='frame'?r?.role==='viewer'&&r.drawn===message.sequence:r?.role==='source'&&r.id===message.id);
    if(message.type==='action'){
      if(response?.role==='source'&&response.id===message.id){sourceReplies++;feedback(`Source replied: ${response.result}; applied total: ${response.applied}. Image acknowledgement is separate.`);}
      else feedback('RPC resolved without a matching SOURCE response. Check both role/room/player displays.');
@@ -68,13 +75,15 @@ async function receive(wire){
  if(pending.has(m.ack))pending.clear();
  feedback(received>=10?'Run ended. Reload BOTH tabs and reconnect before trying input again.':`Frame ${received}/10: click the canvas, then type now. Each action cycles a number; letters do not appear. ${delay}.`);
  report(`Received Playroom frames: ${received}/10; latest JSON bytes: ${encoder.encode(wire).length}; input to image drawn: ${delay}. Excludes physical display timing.`);
+ return {role:'viewer',drawn:m.sequence};
 }
 async function rpcHandler(wire,sender){
  rpcCallbacks++;
  $('rpcStatus').textContent=`RPC callback ${rpcCallbacks}; sender: ${sender?.id??'unknown'}; payload type: ${typeof wire}`;
+ if(typeof wire==='string'){try{const kind=JSON.parse(wire).type; if(kind==='frame'||kind==='action')measurements.received(kind==='frame'?'image':'action',wire);}catch{}}
  const operation=receiveQueue.then(()=>receive(wire));
  receiveQueue=operation.catch(e=>stop('Receive failed: '+e.message));
- return (await operation)??{role,result:'handled without applying an action'};
+ const reply=(await operation)??{role,result:'handled without applying an action'};measurements.reply(reply);return reply;
 }
 $('connect').onclick=async()=>{
  const gameId=$('gameId').value.trim(),roomCode=$('room').value.trim();role=$('role').value;
@@ -88,9 +97,10 @@ $('connect').onclick=async()=>{
    history.replaceState(null,'',location.pathname+location.search);
    await sdk.insertCoin({gameId,skipLobby:true,maxPlayersPerRoom:2,...(roomCode?{roomCode}:{})});
    sdk.RPC.register(name,rpcHandler);
-   sdk.RPC.register('syntheticTextV1',async message=>textSharing.receive(message));
+   sdk.RPC.register('syntheticTextV1',async message=>{measurements.received('text',message);const reply=textSharing.receive(message);measurements.reply(reply);return reply;});
    sdk.onDisconnect(disconnected);
    connected=true;
+   measurements.reset();
    textSharing.connect(role);$('viewerText').hidden=role!=='viewer';$('sourceText').hidden=role!=='source';$('sendText').disabled=role!=='viewer';$('disconnect').disabled=false;
    for(const id of ['role','gameId','room'])$(id).disabled=true;
    $('start').disabled=role!=='source';report(`Connected as ${role}. Room: ${sdk.getRoomCode()}. No images sent yet.`);

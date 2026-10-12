@@ -11,7 +11,7 @@
 <div id="viewerText" hidden><label for="sharedText">Viewer text (up to 1,024 characters; editable before connecting)</label><br><textarea id="sharedText" rows="4" maxlength="1024" style="width:100%;box-sizing:border-box;font:16px system-ui;min-height:120px"></textarea><br><button id="sendText" disabled>Send current text</button></div>
 <div id="sourceText"><p>Received viewer text (read-only)</p><pre id="receivedText" style="min-height:4em;border:1px solid #7694bb;padding:12px;overflow-wrap:anywhere"></pre></div>
 <p id="textStatus" aria-live="polite">Host receives read-only text here. Connect, then share the room code with the Viewer.</p></section>
-<h2>Bounded image test</h2>
+<section><h2>Measurements</h2><button id="resetMeasurements">Reset measurements</button><pre id="measurements">No measurements yet.</pre><p>RTT uses the sender's monotonic clock. Text RTT starts at RPC send, after debounce. Image RTT includes viewer decode/draw and the return acknowledgement, but excludes source encoding and physical screen presentation. These are round trips, not one-way latency.</p><p>Bytes count UTF-8 application bodies and replies, including PNG base64. They exclude SDK envelopes, signaling, headers, encryption and retransmissions, so they are not actual network bandwidth. Reset changes counters only, not the image-run limits. Connecting/disconnecting starts fresh counters.</p></section><h2>Bounded image test</h2>
 <div id="hostControls"><label>Mode <select id="mode"><option value="full">Full PNG</option><option value="tiles">Changed 32px tiles</option></select></label>
 <button id="start" disabled>Send 10 frames at 1 fps</button></div>
 <canvas id="canvas" width="160" height="96" tabindex="0" aria-label="Tiny synthetic test canvas"></canvas>

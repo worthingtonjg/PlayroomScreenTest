@@ -22,7 +22,7 @@ See [PLAYROOM.md](./PLAYROOM.md). The public project gameId is prefilled. Connec
 
 ## Verification
 
-`npm test` runs sixteen tests covering tile changes and mocked synthetic input/RPC handling. JavaScript syntax checks pass. Mocked tests and static hosting checks are not real Playroom delivery evidence. Live browser automation was unavailable during development; the reported live input issue has not been reproduced or proven resolved. On-screen diagnostics separate detection, send attempts, receipt, application, and image acknowledgement.
+`npm test` runs twenty tests covering tile changes and mocked synthetic input/RPC handling. JavaScript syntax checks pass. Mocked tests and static hosting checks are not real Playroom delivery evidence. Live browser automation was unavailable during development; the reported live input issue has not been reproduced or proven resolved. On-screen diagnostics separate detection, send attempts, receipt, application, and image acknowledgement.
 
 Generated pixels, fixed demo actions, and the contents of the explicitly labeled Viewer textarea are sent through Playroom. The local baseline's dummy text stays in same-origin browser tabs. No OS capture, native input injection, shell execution, remote-desktop functionality, or stored credentials are included.
 
@@ -35,3 +35,11 @@ Receipt status confirms a Source response, not merely a send attempt. If Source 
 ## Separate pages
 
 Use [Host](./host.html) on the receiving device and [Viewer](./viewer.html) on the typing device. Roles are fixed; no selector is needed. The old service link is now a chooser. Connect Host first, copy its room code into Viewer, and Connect there. The Viewer textarea is editable immediately for local drafts; after connection, edits are shared. Use Send current text for a draft entered before connecting. Images remain a separate bounded test controlled by Host.
+
+## Measurements
+
+The panel reports text request-to-source-ack RTT, image-send-to-viewer-draw-ack RTT, and canvas-action-to-source-reply RTT. Each uses performance.now() on the sender, avoiding cross-device clock assumptions. Last and mean values include only matching replies; attempt counts are not delivery counts. Text timing starts after debounce; image timing starts after encoding and includes remote decode/draw plus the reply. Neither measures one-way latency or physical display presentation.
+
+Application byte counters count UTF-8 message bodies and replies (including PNG base64). They exclude RPC envelopes, SDK signaling, network headers, encryption, retransmissions and transport overhead. They are not measured network bandwidth. Reset and reconnect clear measurement counters and invalidate old pending samples; neither overrides frame/traffic limits. No probes or periodic traffic were added.
+
+Manual comparison: reset both panels, send a short text and clear it; record Viewer text RTT and Host receipt count. Start one ten-frame image run and record Host draw-ack RTT and Viewer frame receipts. Repeat after explicitly reconnecting, optionally with the Viewer on another network. No cross-network or physical-device timing results are claimed by the automated tests.

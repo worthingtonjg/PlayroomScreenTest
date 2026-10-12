@@ -2,13 +2,14 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
+import {createMeasurements} from './measurements.js';
 
 function harness(){
  const elements=new Map(),calls=[];
  const context={fillRect(){},fillText(){}};
  const get=id=>{if(!elements.has(id))elements.set(id,{textContent:'',getContext:()=>context,focus(){this.onfocus?.();}});return elements.get(id);};
  const source=readFileSync(new URL('./playroom.js',import.meta.url),'utf8').replace(/^import .*\n/gm,'');
- const sandbox={createTextSharing:()=>({resend(){},disconnect(){},selectRole(){}}),document:{getElementById:get},TextEncoder,performance:{now:()=>1000},crypto:{randomUUID:()=> 'dummy-id'},clearInterval(){},setTimeout(){},setInterval(){},calls};
+ const sandbox={createMeasurements,createTextSharing:()=>({resend(){},disconnect(){},selectRole(){}}),document:{getElementById:get},TextEncoder,performance:{now:()=>1000},crypto:{randomUUID:()=> 'dummy-id'},clearInterval(){},setTimeout(){},setInterval(){},calls};
  vm.runInNewContext(source+`\n globalThis.testApi={input:demoAction,receive,rpcHandler,setPeer(peer){sdk.RPC.call=async(...args)=>{calls.push(args);return peer(args[1],{id:'viewer-test'});};},set(options){({connected,role,received,until,active}={connected:true,role:'viewer',received:1,until:2000,active:false,...options});sdk={RPC:{Mode:{OTHERS:'others'},call:async(...args)=>calls.push(args)}};}};`,sandbox);
  return {api:sandbox.testApi,get,calls};
 }
@@ -40,4 +41,11 @@ test('late action counts callback receipt separately from applied state',async()
  const response=await h.api.rpcHandler(JSON.stringify({type:'action',id:'late'}),{id:'viewer-test'});
  assert.equal(response.result,'rejected: run inactive');
  assert.match(h.get('inputStatus').textContent,/RPC callbacks: 1; source action callbacks: 1; source actions applied: 0/);
+});
+test('viewer returns sequence-specific draw ack only for accepted frame sequence',async()=>{
+ const h=harness();h.api.set({received:0});
+ const reply=await h.api.rpcHandler(JSON.stringify({type:'frame',sequence:1,full:true,patches:[]}),{id:'host'});
+ assert.equal(reply.role,'viewer');assert.equal(reply.drawn,1);
+ const missing=await h.api.rpcHandler(JSON.stringify({type:'frame',sequence:3,full:false,patches:[]}),{id:'host'});
+ assert.equal(missing.drawn,undefined);
 });
